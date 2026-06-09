@@ -68,5 +68,22 @@ def retrieve(query, n_results=N_RESULTS):
     if _collection.count() == 0:
         return []
 
-    # Your implementation here.
-    return []
+def retrieve(query, n_results=N_RESULTS):
+    if _collection.count() == 0:
+        return []
+
+    results = _collection.query(
+        query_texts=[query],
+        n_results=n_results,
+        include=["documents", "metadatas", "distances"]
+    )
+
+    chunks = []
+    for i in range(len(results["documents"][0])):
+        chunks.append({
+            "text":     results["documents"][0][i],
+            "game":     results["metadatas"][0][i]["game"],
+            "distance": results["distances"][0][i],
+        })
+
+    return chunks

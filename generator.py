@@ -35,5 +35,30 @@ def generate_response(query, retrieved_chunks):
             "Try rephrasing your question — or check that your ingestion pipeline is working."
         )
 
-    # Your implementation here.
-    return "⚙️ Response generation not yet implemented. Complete Milestone 3 to activate answers."
+# Format the retrieved chunks into a context block
+    context = ""
+    for chunk in retrieved_chunks:
+        context += f"[Source: {chunk['game']}]\n{chunk['text']}\n\n"
+
+    # Call the Groq LLM with a grounding system prompt
+    response = _client.chat.completions.create(
+        model=LLM_MODEL,
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "You are a board game rules assistant. "
+                    "Answer using ONLY the rule text provided below. "
+                    "Do not draw on outside knowledge or fill in gaps from what you know about board games. "
+                    "Always state which game your answer comes from. "
+                    "If the answer is not contained in the provided text, say so explicitly — do not guess."
+                ),
+            },
+            {
+                "role": "user",
+                "content": f"Question: {query}\n\nRule text:\n{context}",
+            },
+        ],
+    )
+
+    return response.choices[0].message.content
